@@ -1,0 +1,46 @@
+{
+  "name": "admin-master-music-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 4000",
+    "build": "next build",
+    "start": "next start -p 4000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@fortawesome/free-solid-svg-icons": "^6.5.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@headlessui/react": "^2.1.8",
+    "@heroicons/react": "^2.1.1",
+    "@material-tailwind/react": "^2.1.8",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/material": "^5.15.10",
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "fragment": "^0.3.0",
+    "js-cookie": "^3.0.5",
+    "jwt-decode": "^4.0.0",
+    "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
+    "next": "14.2.13",
+    "next-auth": "^4.24.7",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hook": "^0.0.1",
+    "react-hook-form": "^7.53.0",
+    "react-icons": "^4.12.0",
+    "react-intersection-observer": "^9.10.3",
+    "react-paginate": "^8.2.0",
+    "react-router-dom": "^6.23.1"
+  },
+  "devDependencies": {
+    "eslint": "8.29.0",
+    "eslint-config-next": "13.0.6",
+    "postcss": "^8.4.19",
+    "tailwindcss": "^3.2.4"
+  }
+}
