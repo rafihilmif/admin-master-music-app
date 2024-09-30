@@ -188,7 +188,7 @@ export default function index() {
                             <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-500 dark:text-gray-300">
                               {item.name}
                             </td>
-                            {item.status == 1 ? (
+                            {item.stock > 0 ? (
                               <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-700">
                                 <div class="inline-flex items-center gap-x-2 rounded-full bg-emerald-100/60 px-3 py-1 text-emerald-500 dark:bg-gray-800">
                                   <svg
@@ -210,7 +210,7 @@ export default function index() {
                                   <h2 class="text-sm font-normal">On-stock</h2>
                                 </div>
                               </td>
-                            ) : item.status == 0 ? (
+                            ) : item.stock <= 0 ? (
                               <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-700">
                                 <div class="inline-flex items-center gap-x-2 rounded-full bg-red-100/60 px-3 py-1 text-red-500 dark:bg-gray-800">
                                   <svg
