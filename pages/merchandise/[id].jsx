@@ -23,7 +23,7 @@ export default function merchandiseById() {
   const [OldStock, setOldStock] = useState();
     
    const [formData, setFormData] = useState({});
-  const [newStatus, setNewStatus] = useState();
+
     const [newImage, setNewImage] = useState([]);
     
   const [uploadProgress, setUploadProgress] = useState({});
@@ -109,8 +109,6 @@ export default function merchandiseById() {
     Object.keys(formData).forEach((key) => {
       data.append(key, formData[key]);
     });
-
-    data.append('status', newStatus);
 
     newImage.forEach(({ file, number }) => {
       data.append('image', file);
