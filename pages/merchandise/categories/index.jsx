@@ -53,7 +53,7 @@ export default function index() {
         <div class="flex flex-col border-b py-4 sm:flex-row sm:items-start">
           <div class="mr-auto shrink-0 sm:py-3">
             <p class="font-medium text-3xl text-black">Categories Details</p>
-            <p class="text-sm text-gray-600">Add new genre</p>
+            <p class="text-sm text-gray-600">Add new categories</p>
           </div>
           <button
             onClick={() => reset()}
@@ -173,14 +173,12 @@ export default function index() {
                               </button>
 
                               <a
-                                href={`/admin/artist/update/${item.id_category}`}
+                                href={`/merchandise/categories/${item.id_category}`}
                                 className=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none"
                               >
                                 <Edit className="h-6 w-6" />
                               </a>
-                              <button class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
-                                <Lock className="h-6 w-6" />
-                              </button>
+                              
                             </div>
                           </td>
                         </tr>

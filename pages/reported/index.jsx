@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
-import { Delete, Edit, Lock } from '@mui/icons-material';
+import { VisibilityRounded} from '@mui/icons-material';
 
 export default function index() {
   const [dataReported, setDataReported] = useState([]);
@@ -157,18 +157,9 @@ export default function index() {
                           <td class="whitespace-nowrap px-4 py-4 text-sm">
                             <div class="flex items-center gap-x-6">
                               <button class="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
-                                <Delete className="h-6 w-6" />
+                                <VisibilityRounded className="h-6 w-6" />
                               </button>
 
-                              <a
-                                href={`/fans/update/${item.id_fans}`}
-                                className=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none"
-                              >
-                                <Edit className="h-6 w-6" />
-                              </a>
-                              <button class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
-                                <Lock className="h-6 w-6" />
-                              </button>
                             </div>
                           </td>
                         </tr>

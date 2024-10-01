@@ -1,9 +1,14 @@
-import React from 'react'
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
+import { baseURLFile } from '@/baseURLFile';
 export default function songById() {
+  const router = useRouter();
+  const { id } = router.query;
+  const fileInputRef1 = useRef();
+  const fileInputRef2 = useRef();
+
   const [dataAlbum, setDataAlbum] = useState([]);
   const [dataGenre, setDataGenre] = useState([]);
 
@@ -18,9 +23,10 @@ export default function songById() {
   const [newImageSong, setNewImageSong] = useState(null);
   const [newAudioSong, setNewAudioSong] = useState(null);
 
-  const { id } = router.query;
   const [idArtist, setIdArtist] = useState('');
   const [formData, setFormData] = useState({});
+
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -42,10 +48,6 @@ export default function songById() {
   }, [id]);
 
   useEffect(() => {
-    fetchDataGenre();
-  }, []);
-
-  useEffect(() => {
     fetchDataAlbum();
   }, [idArtist]);
 
@@ -57,14 +59,20 @@ export default function songById() {
       })
       .catch((err) => console.error('error' + err));
   };
-  const fetchDataGenre = async () => {
-    await axios
-      .get(`${baseURL}/genre`)
-      .then((res) => {
-        setDataGenre(res.data.data);
-      })
-      .catch((err) => console.error('error' + err));
-  };
+
+   useEffect(() => {
+    const fetchDataGenre = async () => {
+      try {
+          const response = await axios.get(
+            `${baseURL}/admin/choose/genre`,
+          );
+          setDataGenre(response.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+    };
+    fetchDataGenre();
+  }, []);
 
   const updateField = (field, value) => {
     setFormData({
@@ -92,24 +100,132 @@ export default function songById() {
     }
     await axios
       .put(`${baseURL}/admin/song?id=${id}`, data)
-      .then(alert('Data berhasil diubah'), router.push('/admin/song/data'))
+      .then(alert('Sucessfully change song'), router.reload())
       .catch((err) => console.error('error' + err));
   };
 
-  const removeImageSong = async () => {
-    await axios
-      .put(`${baseURL}/admin/song/remove/avatar?id=${id}`)
-      .then(router.reload())
-      .catch((err) => console.error('error' + err));
-  };
-  const removeAudioSong = async () => {
-    await axios
-      .put(`${baseURL}/admin/song/remove/audio?id=${id}`)
-      .then(router.reload())
-      .catch((err) => console.error('error' + err));
-  };
   return (
-      <>
-      </>
+    <>
+      <div class="my-4 w-full border bg-white px-4 shadow-xl sm:mx-4 sm:rounded-xl sm:px-4 sm:py-4">
+              <div class="flex flex-col border-b py-4 sm:flex-row sm:items-start">
+                <div class="mr-auto shrink-0 sm:py-3">
+                  <p class="font-medium">Identity Details</p>
+                  <p class="text-sm text-gray-600">Update existing data</p>
+                </div>
+                
+                <button
+                  onClick={handleUpdate}
+                  class="hidden rounded-lg border-2 border-transparent bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring sm:inline"
+                >
+                  Update
+                </button>
+              </div>
+              <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
+                <p class="w-32 shrink-0 font-medium">Artist</p>
+                <input
+                  readOnly={true}
+                  value={oldArtist}
+                  class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1"
+                />
+              </div>
+              <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+                <p className="w-32 shrink-0 font-medium">Album</p>
+                <div className="relative w-full rounded-lg ">
+                  <select
+                    onChange={(e) => updateField('album', e.target.value)}
+                    className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1"
+                  >
+                    <option value="#">Please select album...</option>
+                    <option value="-">-</option>
+                    {dataAlbum.map((item) => (
+                      <option value={item.name}>{item.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+                <p className="w-32 shrink-0 font-medium">Track Name</p>
+                <input
+                  defaultValue={oldTrackName}
+                  onChange={(e) => updateField('name', e.target.value)}
+                  placeholder="Type track name"
+                  className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1"
+                />
+              </div>
+              <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+                <p className="w-32 shrink-0 font-medium">Genre</p>
+                <div className="relative w-full rounded-lg ">
+                  <select
+                    onChange={(e) => updateField('genre', e.target.value)}
+                    className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1"
+                  >
+                    <option value="#">Please select genre...</option>
+                    {dataGenre.map((item) => (
+                      <option value={item.name}>{item.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
+                <p class="w-32 shrink-0 font-medium">Release Date</p>
+                <input
+                  value={oldReleased}
+                  onChange={(e) => updateField('release_date', e.target.value)}
+                  type="date"
+                  class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1"
+                />
+              </div>
+              <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
+                <p class="w-32 shrink-0 font-medium">Audio</p>
+                <input
+                  type="file"
+                  onChange={handleAudioChange}
+                  class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1"
+                />
+          </div>
+            <div className="flex flex-col gap-4 py-4 ">
+                <div class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black">
+                  <div className="flex flex-wrap justify-center gap-4">
+                    <label
+                      onMouseEnter={() => setHoveredIndex(1)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                      className="relative flex min-h-[200px] w-64 items-center justify-center rounded-md border border-solid border-gray-300 p-4 text-center shadow-lg"
+                    >
+                      <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-xl bg-white">
+                        <img
+                          height={100}
+                          width={100}
+                          className="block h-full w-auto rounded-xl"
+                          alt=""
+                          src={`${baseURLFile}/assets/image/song/${oldImageSong}`}
+                        />
+                        {hoveredIndex === 1 && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="flex flex-col items-center">
+                            
+                              <label
+                                className="text-md group relative h-10 w-36 cursor-pointer overflow-hidden rounded-md bg-blue-500 p-2 font-bold text-white"
+                              >
+                                Change Picture
+                                <input
+                                  type="file"
+                                  name="image"
+                                  className="hidden"
+                                  onChange={(event) =>
+                                    handleImageChange(event)
+                                  }
+                                />
+                                <div className="absolute inset-0 h-full w-full scale-0 rounded-2xl transition-all duration-300 group-hover:scale-100 group-hover:bg-white/30"></div>
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </label>
+                </div>
+              </div>
+            </div>
+        </div>
+    </>
   )
 }

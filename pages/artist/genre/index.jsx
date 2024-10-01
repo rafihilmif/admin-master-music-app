@@ -172,14 +172,11 @@ export default function index() {
                               </button>
 
                               <a
-                                href={`/admin/artist/update/${item.id_genre}`}
+                                href={`/artist/genre/${item.id_genre}`}
                                 className=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none"
                               >
                                 <Edit className="h-6 w-6" />
                               </a>
-                              <button class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
-                                <Lock className="h-6 w-6" />
-                              </button>
                             </div>
                           </td>
                         </tr>

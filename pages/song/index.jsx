@@ -257,7 +257,7 @@ export default function index() {
                                 <Delete className="h-6 w-6" />
                               </button>
                               <a
-                                href={`/admin/song/update/${item.id_song}`}
+                                href={`/song/${item.id_song}`}
                                 class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none"
                               >
                                 <Edit className="h-6 w-6" />
