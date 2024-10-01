@@ -3,24 +3,24 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 
-export default function categoriesById () {
+export default function categoriesById() {
+  const { id } = router.query;
   const router = useRouter();
   const [newName, setNewName] = useState('');
   const [name, setName] = useState('');
-  const { id } = router.query;
 
-  useEffect(() => {
-    async function fetchData() {
+   useEffect(() => {
+    const fetchDataGenre = async () => {
       try {
-        const response = await axios.get(`${baseURL}/admin/genre?id=${id}`);
-        setName(response.data.name);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    }
-    fetchData();
-  }, [id]);
-
+         const response = await axios.get(`${baseURL}/admin/genre?id=${id}`);
+         setName(response.data.name);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+    };
+    fetchDataGenre();
+   }, [id]);
+  
   const onUpdate = async () => {
     await axios
       .put(`${baseURL}/admin/genre?id=${id}`, {

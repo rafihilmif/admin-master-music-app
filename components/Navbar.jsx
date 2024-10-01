@@ -100,7 +100,7 @@ export default function Navbar({showNav, setShowNav}) {
             <Menu.Button className="inline-flex w-full justify-center items-center">
               <picture>
                 <img
-                  src="/man-smiling.jpg"
+                
                   className="rounded-full h-8 md:mr-4 border-2 border-white shadow-sm"
                   alt="profile picture"
                 />
