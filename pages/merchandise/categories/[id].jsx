@@ -9,18 +9,19 @@ export default function categoriesById() {
   const [name, setName] = useState('');
   const { id } = router.query;
 
-  useEffect(() => {
-    async function fetchData() {
+
+    useEffect(() => {
+    const fetchDataCategories = async () => {
       try {
         const response = await axios.get(`${baseURL}/admin/category?id=${id}`);
-        setName(response.data.name);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    }
-    fetchData();
-  }, [id]);
-
+         setName(response.data.name);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+    };
+    fetchDataCategories();
+    }, [id]);
+    
   const onUpdate = async () => {
     await axios
       .put(`${baseURL}/admin/category?id=${id}`, {

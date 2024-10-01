@@ -204,7 +204,7 @@ export default function index() {
                             <div class="flex items-center gap-x-6">
                         
                               <a
-                                href={`/admin/artist/update/${item.id_artist}`}
+                                href={`/artist/transaction/${item.id_transaction}`}
                                 className=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none"
                               >
                                 <VisibilityRounded className="h-6 w-6" />

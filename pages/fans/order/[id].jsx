@@ -4,53 +4,55 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 
-export default function transactionById() {
+export default function orderById() {
   const router = useRouter();
   const { id } = router.query;
 
-  const [transactionDate, setTransactionDate] = useState();
-  const [transactionStatus, setTransactionStatus] = useState();
-  const [transactionName, setTransactionName] = useState();
-  const [transactionAddress, setTransactionAddress] = useState();
-  const [transactionCourier, setTransactionCourier] = useState();
-  const [transactionTotal, setTransactionTotal] = useState();
+  const [orderDate, setOrderDate] = useState();
+  const [orderStatus, setOrderStatus] = useState();
+  const [orderFirstName, setOrderFirstName] = useState();
+  const [orderLastName, setOrderLastName] = useState();
+  const [orderPhone, setOrderPhone] = useState();
+  const [orderAddress, setOrderAddress] = useState();
+  const [orderCourier, setOrderCourier] = useState();
+  const [orderTotal, setOrderTotal] = useState();
 
-  const [dataItemTransaction, setDataItemTransaction] = useState([]);
+  const [dataItemOrder, setDataItemOrder] = useState([]);
 
   useEffect(() => {
-    const fetchDataDetailTransaction = async () => {
+    const fetchDataDetailOrder = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}/artist/detail/transaction?id=${id}`,
+          `${baseURL}/admin/detail/order?id=${id}`,
         );
-        setTransactionDate(response.data.created_at);
-        setTransactionStatus(response.data.status);
-        setTransactionName(response.data.name);
-        setTransactionAddress(response.data.address);
-        setTransactionCourier(response.data.courier);
-        setTransactionTotal(response.data.total);
+        setOrderDate(response.data.created_at);
+        setOrderStatus(response.data.status);
+        setOrderFirstName(response.data.first_name);
+        setOrderLastName(response.data.last_name);
+        setOrderPhone(response.data.phone);
+        setOrderAddress(response.data.address);
+        setOrderCourier(response.data.courier);
+        setOrderTotal(response.data.total);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
     if (id) {
-      fetchDataDetailTransaction();
+      fetchDataDetailOrder();
     }
   }, [id]);
 
   useEffect(() => {
-    const fetchDataItemTransaction = async () => {
+    const fetchDataItemOrder = async () => {
       try {
-        const response = await axios.get(
-          `${baseURL}/artist/item/transaction?id=${id}`,
-        );
-        setDataItemTransaction(response.data);
+        const response = await axios.get(`${baseURL}/admin/item/order?id=${id}`);
+        setDataItemOrder(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
     if (id) {
-      fetchDataItemTransaction();
+      fetchDataItemOrder();
     }
   }, [id]);
 
@@ -61,48 +63,50 @@ export default function transactionById() {
     }).format(value);
   };
 
-  const tax = transactionTotal * 0.02;
   return (
       <>
-          <div className="mt-10 h-auto w-full overflow-hidden px-2">
+         <div className="mt-10 h-auto w-full overflow-hidden px-2">
         <div className="w-full bg-transparent px-2 py-4 font-sans">
-          <h1 className="mb-4 text-3xl font-bold">Transaction Details</h1>
+          <h1 className="mb-4 text-3xl font-bold">Order Details</h1>
           <div className="mx-auto w-full rounded-lg border bg-white p-6">
-            <p className="mb-6 text-gray-600">Transaction #{id}</p>
+            <p className="mb-6 text-gray-600">Order #{id}</p>
             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
               <div className="rounded-lg border p-4">
                 <h2 className="mb-4 font-semibold text-black">
-                  Transaction Infomartion
+                  Order Information
                 </h2>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <p className="text-gray-600">Transaction Date</p>
-                  <p className="text-black">{transactionDate}</p>
+                  <p className="text-gray-600">Order Date</p>
+                  <p className="text-black">{orderDate}</p>
                   <p className="text-gray-600">Payment Status</p>
-                  <p className="text-black">{transactionStatus}</p>
+                  <p className="text-black">{orderStatus}</p>
                 </div>
               </div>
-
               <div className="rounded-lg border p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <h2 className="mb-4 font-semibold text-black">Customer</h2>
                 </div>
                 <p className="mb-1 text-sm text-gray-600">Name</p>
-                <p className="mb-2 text-sm text-black">{transactionName}</p>
+                <p className="mb-2 text-sm text-black">
+                  {orderFirstName + ' ' + orderLastName}
+                </p>
+                <p className="mb-1 text-sm text-gray-600">Phone</p>
+                <p className="mb-2 text-sm text-black">{orderPhone}</p>
               </div>
               <div className="rounded-lg border p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <h2 className="mb-4 font-semibold text-black">Address</h2>
                 </div>
                 <p className="mb-1 text-sm text-gray-600">Shipping Address</p>
-                <p className="mb-4 text-sm text-black">{transactionAddress}</p>
+                <p className="mb-4 text-sm text-black">{orderAddress}</p>
                 <p className="mb-1 text-sm text-gray-600">Courier</p>
-                <p className="mb-4 text-sm text-black">{transactionCourier}</p>
+                <p className="mb-4 text-sm text-black">{orderCourier}</p>
               </div>
             </div>
             <div className="mb-8 space-y-4">
-              {dataItemTransaction.map((item) => (
+              {dataItemOrder.map((item) => (
                 <div
-                  key={item.id_transaction_item}
+                  key={item.id_order}
                   className="flex items-center border-b pb-4"
                 >
                   <img
@@ -111,7 +115,9 @@ export default function transactionById() {
                     className="mr-4 h-20 w-20 rounded object-cover"
                   />
                   <div className="flex-grow">
-                    <h3 className="font-semibold">{item.Merchandise.name}</h3>
+                    <h3 className="font-semibold text-black">
+                      {item.Merchandise.name}
+                    </h3>
                     {item.size !== null ? (
                       <p className="text-sm text-gray-600">Size: {item.size}</p>
                     ) : (
@@ -119,12 +125,6 @@ export default function transactionById() {
                     )}
 
                     <p className="text-sm text-gray-600">Qty: {item.qty}</p>
-                    <p className="text-sm text-gray-600">
-                      Price:{' '}
-                      <b className="text-red-500">
-                        {formatCurrency(item.Merchandise.price * item.qty)}
-                      </b>
-                    </p>
                   </div>
                   <p className="font-semibold">
                     {formatCurrency(item.Merchandise.price)}
@@ -137,23 +137,7 @@ export default function transactionById() {
               <div className="flex justify-between">
                 <p className="text-gray-600">Total</p>
                 <p className="font-semibold text-black">
-                  {formatCurrency(transactionTotal)}
-                </p>
-              </div>
-            </div>
-            <div className="space-y-2 text-right">
-              <div className="flex justify-between">
-                <p className="text-gray-600">Tax</p>
-                <p className="font-semibold text-black">
-                  {formatCurrency(tax)}
-                </p>
-              </div>
-            </div>
-            <div className="space-y-2 text-right">
-              <div className="flex justify-between">
-                <p className="text-gray-600">Transfer to Artist</p>
-                <p className="font-semibold text-black">
-                  {formatCurrency(transactionTotal - tax)}
+                  {formatCurrency(orderTotal)}
                 </p>
               </div>
             </div>
