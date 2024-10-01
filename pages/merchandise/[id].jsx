@@ -109,7 +109,6 @@ export default function merchandiseById() {
     Object.keys(formData).forEach((key) => {
       data.append(key, formData[key]);
     });
-
     newImage.forEach(({ file, number }) => {
       data.append('image', file);
       data.append('number', number);
