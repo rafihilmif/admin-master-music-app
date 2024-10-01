@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
-import {Delete, Edit, Lock} from '@mui/icons-material';
+import { Delete, Edit, Lock } from '@mui/icons-material';
+
 export default function index() {
-     const [data, setData] = useState([]);
+  const [data, setData] = useState([]);
   const [totalArtist, setTotalArtist] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -229,7 +230,7 @@ export default function index() {
                               </button>
 
                               <a
-                                href={`/admin/artist/update/${item.id_artist}`}
+                                href={`/artist/${item.id_artist}`}
                                 className=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none"
                               >
                                 <Edit className="h-6 w-6" />

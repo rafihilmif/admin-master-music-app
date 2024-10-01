@@ -231,7 +231,7 @@ export default function index() {
                               </button>
 
                               <a
-                                href={`/fans/update/${item.id_fans}`}
+                                href={`/fans/${item.id_fans}`}
                                 className=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none"
                               >
                                 <Edit className="h-6 w-6" />

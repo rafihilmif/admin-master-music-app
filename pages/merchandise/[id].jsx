@@ -26,7 +26,6 @@ export default function merchandiseById() {
 
     const [newImage, setNewImage] = useState([]);
     
-  const [uploadProgress, setUploadProgress] = useState({});
     const [hoveredIndex, setHoveredIndex] = useState(null);
 
     const fetchImageData = async (id) => {
