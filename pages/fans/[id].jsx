@@ -194,7 +194,7 @@ export default function updateArtistById() {
                       </div>
                     </label>
                 </div>
-                </div>
+              </div>
             </div>
         </div>
       </div>

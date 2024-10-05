@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
-import { Delete, Edit, Lock } from '@mui/icons-material';
+import { Delete, Edit} from '@mui/icons-material';
 
 export default function index() {
   const [dataFans, setDataFans] = useState([]);
@@ -147,7 +147,7 @@ export default function index() {
                                           
                                           <img
                                 className="h-8 w-8 rounded-full object-cover"
-                              src='/images/commonthumbnails/thumbnail1.png' 
+                              src='/image/thumbnail3.png' 
                               />
                                       ): (<img
                                 class="h-8 w-8 rounded-full object-cover"
@@ -236,9 +236,7 @@ export default function index() {
                               >
                                 <Edit className="h-6 w-6" />
                               </a>
-                              <button class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
-                                <Lock className="h-6 w-6" />
-                              </button>
+                             
                             </div>
                           </td>
                         </tr>

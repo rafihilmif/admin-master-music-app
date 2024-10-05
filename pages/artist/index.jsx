@@ -166,7 +166,7 @@ export default function index() {
                                           
                                           <img
                                 className="h-8 w-8 rounded-full object-cover"
-                              src='/images/commonthumbnails/thumbnail1.png' 
+                                src='/image/thumbnail3.png' 
                               />
                                       ): (<img
                                 className="h-8 w-8 rounded-full object-cover"

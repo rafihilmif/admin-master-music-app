@@ -4,116 +4,153 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
+import Swal from 'sweetalert2';
 export default function add() {
-    const router = useRouter();
+  const router = useRouter();
 
-  const { register, handleSubmit, reset } = useForm();
-
-  const onSubmit = async (data) => {
-    const formData = new FormData();
-
-    for (const key in data) {
-      if (key === 'image') {
-        formData.append(key, data[key][0]);
-      } else {
-        formData.append(key, data[key]);
-      }
+  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [avatar, setAvatar] = useState('');
+  const [password, setPassword] = useState('');
+  const [birth, setBirth] = useState('');
+  const [gender, setGender] = useState('');
+  const [errors, setErrors] = useState({});
+  
+  const uploadToClient = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      const i = event.target.files[0];
+      setAvatar(i);
     }
+  };
+
+  const handleRegisterFans = async () => {
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('username', username);
+    formData.append('first_name', firstName);
+    formData.append('last_name', lastName);
+    formData.append('password', password);
+    formData.append('gender', gender);
+    formData.append('birth', birth);
+    formData.append('image', avatar);
+    
+    console.log(formData);
     try {
-      await axios
-        .post(`${baseURL}/admin/fans/add`, formData)
-        .then(alert('Berhasil menambahkan akun fans'), router.reload());
+      const response = await axios.post(`${baseURL}/admin/fans/add`, formData);
+        if (response.status === 201) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: response.data.message,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          window.location.reload();
+        });
+      }
     } catch (error) {
-      if (error.response) {
-        alert(
-          'Terjadi kesalahan saat mengunggah file: ' +
-            error.response.data.message,
-        );
-      } else if (error.request) {
-        alert('Terjadi kesalahan saat mengirim permintaan ke server.');
+      if (error.response && error.response.status === 400) {
+        const { path, message } = error.response.data;
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [path]: message,
+        }));
       } else {
-        alert('Terjadi kesalahan: ' + error.message);
+        console.error('An unexpected error occurred:', error);
       }
     }
   };
   return (
    <>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
+      <div
+       
         className="relative my-4 w-full  border bg-white px-4 shadow-xl sm:mx-4 sm:rounded-xl sm:px-4 sm:py-4"
       >
         <div>
-          <div class="flex flex-col border-b py-4 sm:flex-row sm:items-start">
-            <div class="mr-auto shrink-0 sm:py-3">
-              <p class="font-bold text-2xl text-black">Account Details</p>
-            <p class="text-sm text-gray-600">Add your account details</p>
+          <div className="flex flex-col border-b py-4 sm:flex-row sm:items-start">
+            <div className="mr-auto shrink-0 sm:py-3">
+              <p className="font-bold text-2xl text-black">Account Details</p>
+            <p className="text-sm text-gray-600">Add your account details</p>
             </div>
             <button
-              onClick={() => reset()}
-              type="reset"
-              class="mr-2 hidden rounded-lg border-2 px-4 py-2 font-medium text-gray-500 hover:bg-gray-200 focus:outline-none focus:ring sm:inline"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="hidden rounded-lg border-2 border-transparent bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring sm:inline"
+              onClick={()=> handleRegisterFans()}
+              className="hidden rounded-lg border-2 border-transparent bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring sm:inline"
             >
               Save
             </button>
           </div>
-          <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
-            <p class="w-32 shrink-0 font-medium text-black">Name</p>
+          <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+            <p className="w-32 shrink-0 font-medium text-black">Name</p>
             <input
-              {...register('first_name', { required: true, maxLength: 20 })}
+                onChange={(e) => setFirstName(e.target.value)}
               placeholder="First Name"
-             class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
+             className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
             />
             <input
-              {...register('last_name', { required: true, maxLength: 20 })}
+               onChange={(e) => setLastName(e.target.value)}
               placeholder="Last Name"
-             class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
+             className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
             />
           </div>
-          <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
-            <p class="w-32 shrink-0 font-medium text-black">Email</p>
+          {errors.first_name && (
+                <p className="mb-1 text-red-500">{errors.first_name}</p>
+          )}
+          {errors.last_name && (
+                <p className="mb-1 text-red-500">{errors.last_name}</p>
+          )}
+          <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+            <p className="w-32 shrink-0 font-medium text-black">Email</p>
             <input
-              {...register('email', { required: true, pattern: /^\S+@\S+$/i })}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="your.email@domain.com"
-              class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
+              className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
             />
           </div>
-          <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
-            <p class="w-32 shrink-0 font-medium text-black">Username</p>
+           {errors.email && (
+                <p className="mb-1 text-red-500">{errors.email}</p>
+              )}
+          <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+            <p className="w-32 shrink-0 font-medium text-black">Username</p>
             <input
-              {...register('username', { required: true, maxLength: 20 })}
+              onChange={(e) => setUsername(e.target.value)}
               placeholder="Username"
-              class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
+              className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
             />
           </div>
-          <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
-            <p class="w-32 shrink-0 font-medium text-black">Password</p>
+           {errors.username && (
+                <p className="mb-1 text-red-500">{errors.username}</p>
+              )}
+          <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+            <p className="w-32 shrink-0 font-medium text-black">Password</p>
             <input
-              {...register('password', { required: true })}
+               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               type="password"
-             class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
+             className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
             />
           </div>
-          <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
-            <p class="w-32 shrink-0 font-medium text-black">Birthday</p>
+           {errors.password && (
+                <p className="mb-1 text-red-500">{errors.password}</p>
+              )}
+          <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+            <p className="w-32 shrink-0 font-medium text-black">Birthday</p>
             <input
-              {...register('birth', { required: true })}
+               onChange={(e) => setBirth(e.target.value)}
               type="date"
-              class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
+              className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
             />
           </div>
-          <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
-            <p class="w-32 shrink-0 font-medium text-black">Gender</p>
-            <div class="relative w-full rounded-lg ">
+           {errors.birth && (
+                <p className="mb-1 text-red-500">{errors.birth}</p>
+              )}
+          <div className="flex flex-col gap-4 border-b py-4 sm:flex-row">
+            <p className="w-32 shrink-0 font-medium text-black">Gender</p>
+            <div className="relative w-full rounded-lg ">
               <select
-                {...register('gender', { required: true })}
-                class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
+                 onChange={(e) => setGender(e.target.value)}
+                className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
               >
                 <option value="#">Please select gender...</option>
                 <option value="Male">Male</option>
@@ -121,25 +158,28 @@ export default function add() {
               </select>
             </div>
           </div>
-          <div class="flex flex-col gap-4 py-4  lg:flex-row">
-            <div class="w-32 shrink-0  sm:py-4">
-              <p class="mb-auto font-medium">Avatar</p>
-              <p class="text-sm text-gray-600">Change your avatar</p>
+           {errors.gender && (
+                <p className="mb-1 text-red-500">{errors.name}</p>
+              )}
+          <div className="flex flex-col gap-4 py-4  lg:flex-row">
+            <div className="w-32 shrink-0  sm:py-4">
+              <p className="mb-auto font-medium">Avatar</p>
+              <p className="text-sm text-gray-600">Change your avatar</p>
             </div>
-            <div class="flex h-56 w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-gray-300 p-5 text-center">
-             <img src='/images/commonthumbnails/thumbnail1.png' className="h-16 w-16 rounded-full" />
-              <p class="text-sm text-gray-600">
+            <div className="flex h-56 w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-gray-300 p-5 text-center">
+             <img src='/image/thumbnail1.png' className="h-16 w-16 rounded-full" />
+              <p className="text-sm text-gray-600">
                 Drop your desired image file here to start the upload
               </p>
               <input
-                {...register('image', { required: true })}
+                onChange={uploadToClient}
                 type="file"
-                class="max-w-full rounded-lg px-2 font-medium text-blue-600 outline-none ring-blue-600 focus:ring-1"
+                className="max-w-full rounded-lg px-2 font-medium text-blue-600 outline-none ring-blue-600 focus:ring-1"
               />
             </div>
           </div>
         </div>
-      </form>
+      </div>
     </>
   )
 }

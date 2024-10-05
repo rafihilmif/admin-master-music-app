@@ -3,15 +3,17 @@ import { useRouter } from 'next/router';
 import { Delete, Edit, Lock } from '@mui/icons-material';
 import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
+import Swal from 'sweetalert2';
 import axios from 'axios';
 
 export default function index() {
-    const router = useRouter();
-      const { register, handleSubmit, reset } = useForm();
+  const router = useRouter();
+  const [name, setName] = useState();
   const [dataCategories, setDataCategories] = useState([]);
   const [totalCategories, setTotalCategories] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [errors, setErrors] = useState({});
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,20 +36,38 @@ export default function index() {
   const handlePrevPage = () => {
     setCurrentPage(currentPage - 1);
   };
-
-  const onSubmit = async (data) => {
+const handleUploadCategories = async () => {
     try {
-      await axios.post(`${baseURL}/admin/category/add`, data);
-      alert('Genre berhasil ditambahkan');
+      const response = await axios.post(`${baseURL}/admin/categories/add`, {
+        name: name
+      });
+      if (response.status === 201) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: response.data.message,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          window.location.reload();
+        });
+      }
     } catch (error) {
-      alert('Error add data:', error);
+      if (error.response && error.response.status === 400) {
+        const { path, message } = error.response.data;
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [path]: message,
+        }));
+      } else {
+        console.error('An unexpected error occurred:', error);
+      }
     }
     };
     
   return (
       <>
-          <form
-        onSubmit={handleSubmit(onSubmit)}
+      <div
         class="relative my-4 w-full border bg-white px-4 shadow-xl rounded-xl"
       >
         <div class="flex flex-col border-b py-4 sm:flex-row sm:items-start">
@@ -56,12 +76,7 @@ export default function index() {
             <p class="text-sm text-gray-600">Add new categories</p>
           </div>
           <button
-            onClick={() => reset()}
-            class="mr-2 hidden rounded-lg border-2 px-4 py-2 font-medium text-gray-500 hover:bg-gray-200 focus:outline-none focus:ring sm:inline"
-          >
-            Cancel
-          </button>
-          <button
+            onClick={() => handleUploadCategories()}
             type="submit"
             class="hidden rounded-lg border-2 border-transparent bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 focus:outline-none focus:ring sm:inline"
           >
@@ -71,12 +86,15 @@ export default function index() {
         <div class="flex flex-col gap-4 border-b py-4 sm:flex-row">
           <p class="w-32 shrink-0 font-medium text-black">Categories Name</p>
           <input
-            {...register('name', { required: true })}
+           onChange={(e)=> setName(e.target.value)}
             placeholder="Type genre name"
             class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
           />
         </div>
-      </form>
+         {errors.name && (
+                <p className="mb-1 text-red-500">{errors.name}</p>
+          )}
+      </div>
           <div class="relative my-1 w-full border bg-white shadow-xl sm:rounded-xl  sm:py-1">
       <div class="flex flex-col py-4 sm:flex-row sm:items-start">
         <section class="container relative mx-3s">
@@ -109,19 +127,19 @@ export default function index() {
                                   d="M2.13347 0.0999756H2.98516L5.01902 4.79058H3.86226L3.45549 3.79907H1.63772L1.24366 4.79058H0.0996094L2.13347 0.0999756ZM2.54025 1.46012L1.96822 2.92196H3.11227L2.54025 1.46012Z"
                                   fill="currentColor"
                                   stroke="currentColor"
-                                  stroke-width="0.1"
+                                  strokeWidth="0.1"
                                 />
                                 <path
                                   d="M0.722656 9.60832L3.09974 6.78633H0.811638V5.87109H4.35819V6.78633L2.01925 9.60832H4.43446V10.5617H0.722656V9.60832Z"
                                   fill="currentColor"
                                   stroke="currentColor"
-                                  stroke-width="0.1"
+                                  strokeWidth="0.1"
                                 />
                                 <path
                                   d="M8.45558 7.25664V7.40664H8.60558H9.66065C9.72481 7.40664 9.74667 7.42274 9.75141 7.42691C9.75148 7.42808 9.75146 7.42993 9.75116 7.43262C9.75001 7.44265 9.74458 7.46304 9.72525 7.49314C9.72522 7.4932 9.72518 7.49326 9.72514 7.49332L7.86959 10.3529L7.86924 10.3534C7.83227 10.4109 7.79863 10.418 7.78568 10.418C7.77272 10.418 7.73908 10.4109 7.70211 10.3534L7.70177 10.3529L5.84621 7.49332C5.84617 7.49325 5.84612 7.49318 5.84608 7.49311C5.82677 7.46302 5.82135 7.44264 5.8202 7.43262C5.81989 7.42993 5.81987 7.42808 5.81994 7.42691C5.82469 7.42274 5.84655 7.40664 5.91071 7.40664H6.96578H7.11578V7.25664V0.633865C7.11578 0.42434 7.29014 0.249976 7.49967 0.249976H8.07169C8.28121 0.249976 8.45558 0.42434 8.45558 0.633865V7.25664Z"
                                   fill="currentColor"
                                   stroke="currentColor"
-                                  stroke-width="0.3"
+                                  strokeWidth="0.3"
                                 />
                               </svg>
                             </button>
@@ -201,13 +219,13 @@ export default function index() {
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 class="h-5 w-5 rtl:-scale-x-100"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"
                 />
               </svg>
@@ -227,13 +245,13 @@ export default function index() {
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 class="h-5 w-5 rtl:-scale-x-100"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"
                 />
               </svg>
