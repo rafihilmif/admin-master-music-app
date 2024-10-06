@@ -4,8 +4,8 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 
 export default function categoriesById() {
+   const router = useRouter();
   const { id } = router.query;
-  const router = useRouter();
   const [newName, setNewName] = useState('');
   const [name, setName] = useState('');
 
@@ -22,13 +22,16 @@ export default function categoriesById() {
    }, [id]);
   
   const onUpdate = async () => {
-    await axios
+    try {
+       await axios
       .put(`${baseURL}/admin/genre?id=${id}`, {
         name: newName,
       })
       .then(alert('Data berhasil diubah'), router.reload())
-      .catch((err) => console.error('error' + err));
+    } catch (error) {
+      console.error('error' + error);
   };
+    } 
   return (
     <>
       <div class="relative my-4 w-full border bg-white px-4 shadow-xl sm:mx-4 sm:rounded-xl sm:px-4 sm:py-4">
