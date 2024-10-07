@@ -29,7 +29,7 @@ export default function songById() {
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   useEffect(() => {
-    async function fetchData() {
+     const fetchData = async () => {
       try {
         const response = await axios.get(`${baseURL}/admin/song?id=${id}`);
         setOldArtist(response.data.Artist.name);
@@ -44,22 +44,27 @@ export default function songById() {
         console.error('Error fetching data:', error);
       }
     }
-    fetchData();
+    if (id) {
+       fetchData();
+    }
+   
   }, [id]);
 
   useEffect(() => {
-    fetchDataAlbum();
+    const fetchDataAlbum = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/admin/choose/album?id=${idArtist}`)
+          setDataAlbum(response.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+    if (idArtist) {
+      fetchDataAlbum();
+    }
   }, [idArtist]);
-
-  const fetchDataAlbum = async () => {
-    await axios
-      .get(`${baseURL}/admin/album?id_artist=${idArtist}`)
-      .then((res) => {
-        setDataAlbum(res.data.data);
-      })
-      .catch((err) => console.error('error' + err));
-  };
-
+  
+  
    useEffect(() => {
     const fetchDataGenre = async () => {
       try {
@@ -132,11 +137,19 @@ export default function songById() {
                 <p className="w-32 shrink-0 font-medium">Album</p>
                 <div className="relative w-full rounded-lg ">
                   <select
-                    onChange={(e) => updateField('album', e.target.value)}
+                    onChange={(e) => {
+                      const selectedAlbum = dataAlbum.find(
+                        (album) => album.name === e.target.value,
+                      );
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        album: selectedAlbum.name,
+                        id_album: selectedAlbum.id_album,
+                      }));
+                    }}
                     className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1"
                   >
                     <option value="#">Please select album...</option>
-                    <option value="-">-</option>
                     {dataAlbum.map((item) => (
                       <option value={item.name}>{item.name}</option>
                     ))}
