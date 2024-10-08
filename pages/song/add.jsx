@@ -95,8 +95,8 @@ export default function add() {
     formData.append('lyric', lyric);
     formData.append('credit', credit);
     
-    if (album === undefined) {
-      formData.append('album', null);
+    if (album === "-") {
+      formData.append('album', "-");
     } else {
       formData.append('album', album);
     }
@@ -166,7 +166,8 @@ export default function add() {
       onChange={(e) => setAlbum(e.target.value)}
       className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
     >
-      <option value="-">Please select album...</option>
+      <option value="">Please select album...</option>
+      <option value="-">-</option>
        {dataAlbum.map((item) => (
       <option key={item.id_album} value={item.name}>{item.name}</option>
       ))}
@@ -194,7 +195,7 @@ export default function add() {
             >
               <option value="#">Please select artist...</option>
               {dataGenre.map((item) => (
-                <option value={item.id_genre} key={item.id_genre}>{item.name}</option>
+                <option value={item.name} key={item.id_genre}>{item.name}</option>
               ))}
             </select>
           </div>

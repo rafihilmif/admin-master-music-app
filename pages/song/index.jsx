@@ -4,9 +4,10 @@ import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import {Delete, Edit} from '@mui/icons-material';
 export default function index() {
-    const [data, setData] = useState([]);
+  const [data, setData] = useState([]);
   const [totalSong, setTotalSong] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -16,7 +17,7 @@ export default function index() {
         );
         setData(response.data.data);
         setTotalSong(response.data.total);
-        console.log(test);
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -24,19 +25,9 @@ export default function index() {
     fetchData();
   }, [currentPage]);
 
-      useEffect(() => {
-    const fetchDataGenre = async () => {
-      try {
-          const response = await axios.get(
-            `${baseURL}/admin/choose/genre`,
-          );
-          setDataGenre(response.data);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-    };
-    fetchDataGenre();
-      }, []);
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
     
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
@@ -212,12 +203,12 @@ export default function index() {
                                 </div>
                               </div>
                             </td>
-                          ) : item.album == '-' ? (
+                          ) : item.album == "-" ? (
                             <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-700">
                               <div class="flex items-center gap-x-2">
                                 <img
                                   class="h-8 w-8 rounded-full object-cover"
-                                   src='/images/commonthumbnails/thumbnail2.png' 
+                                   src='/image/thumbnail3.png' 
                                 />
                                 <div>
                                   <p class="text-xs font-normal text-gray-500 dark:text-gray-400">
