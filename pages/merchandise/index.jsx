@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
-import {Delete, Edit, VisibilityRounded} from '@mui/icons-material';
+import {Delete, Edit, VisibilityRounded, VisibilityOff} from '@mui/icons-material';
+import Swal from 'sweetalert2';
 export default function index() {
+  const router = useRouter();
+
   const [data, setData] = useState([]);
   const [totalMerchandise, setTotalMerchandise] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,6 +26,58 @@ export default function index() {
     };
     fetchData();
   }, [currentPage]);
+
+  const handleDeleteMerchandise = async (idMerch) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      });
+      if (result.isConfirmed) {
+        const response = await axios.delete(
+          `${baseURL}/admin/merchandise/delete?id=${idMerch}`,
+        );
+        await Swal.fire({
+          title: 'Deleted!',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+      }
+      window.location.reload();
+    } catch (error) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while deleting the merchandise',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
+    }
+  };
+
+  const handleHidden= async (idMerch) => {
+    try {
+      await axios.put(`${baseURL}/admin/merchandise/hidden?id=${idMerch}`).then(router.reload());
+    } catch (error) {
+      console.error('Error blocking the artist:', error);
+    }
+  };
+
+  const handleUnhidden= async (idMerch) => {
+    try {
+      await axios.put(`${baseURL}/admin/merchandise/unhidden?id=${idMerch}`).then(router.reload());
+      
+    } catch (error) {
+      console.error('Error unblocking the artist:', error);
+    }
+  };
 
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
@@ -260,7 +316,12 @@ export default function index() {
                             </td>
                             <td class="whitespace-nowrap px-4 py-4 text-sm">
                               <div class="flex items-center gap-x-6">
-                                <button class="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
+                                <button
+                                  onClick={(e) => {
+                                  e.preventDefault();
+                                   handleDeleteMerchandise(item.id_merchandise);
+                                  }}
+                                  class="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
                                   <Delete className="h-6 w-6" />
                                 </button>
                                 <a
@@ -269,9 +330,20 @@ export default function index() {
                                 >
                                   <Edit className="h-6 w-6" />
                                 </a>
-                                <button class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
+                                {item.status === 0 ? (
+                                  <button
+                                    onClick={()=> handleUnhidden(item.id_merchandise)}
+                                    class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
+                                  <VisibilityOff className="h-6 w-6" />
+                                </button>
+                              ) : (
+                                    <button
+                                      onClick={()=> handleHidden(item.id_merchandise)}
+                                      class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
                                   <VisibilityRounded className="h-6 w-6" />
                                 </button>
+                              )}
+                                
                               </div>
                             </td>
                           </tr>

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import {Delete, Edit} from '@mui/icons-material';
+import Swal from 'sweetalert2';
 export default function index() {
   const [data, setData] = useState([]);
   const [totalSong, setTotalSong] = useState(0);
@@ -25,10 +26,41 @@ export default function index() {
     fetchData();
   }, [currentPage]);
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-    
+  const handleDeleteSong = async (idSong) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      });
+      if (result.isConfirmed) {
+        const response = await axios.delete(
+          `${baseURL}/admin/song/delete?id=${idSong}`,
+        );
+        await Swal.fire({
+          title: 'Deleted!',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+      }
+      window.location.reload();
+    } catch (error) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while deleting the merchandise',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
+    }
+  };
+
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
   };
@@ -244,7 +276,9 @@ export default function index() {
                           </td>
                           <td class="whitespace-nowrap px-4 py-4 text-sm">
                             <div class="flex items-center gap-x-6">
-                              <button class="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
+                              <button
+                                onClick={()=> handleDeleteSong(item.id_song)}
+                                class="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
                                 <Delete className="h-6 w-6" />
                               </button>
                               <a

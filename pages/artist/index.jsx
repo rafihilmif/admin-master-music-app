@@ -4,6 +4,7 @@ import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { Delete, Edit, Lock, LockOpen } from '@mui/icons-material';
 import { useRouter } from 'next/router';
+import Swal from 'sweetalert2';
 export default function index() {
   const router = useRouter();
   const [data, setData] = useState([]);
@@ -25,9 +26,44 @@ export default function index() {
     fetchData();
   }, [currentPage]);
 
+  const handleDeleteArtist = async (idArtist) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      });
+      if (result.isConfirmed) {
+        const response = await axios.delete(
+          `${baseURL}/admin/artist/delete?id=${idArtist}`,
+        );
+        await Swal.fire({
+          title: 'Deleted!',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+      }
+      window.location.reload();
+    } catch (error) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while deleting the artist account',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
+    }
+  };
+
    const handleBlock= async (idArtist) => {
     try {
-      await axios.put(`${baseURL}/admin/block?id=${idArtist}`).then(router.reload());
+      await axios.put(`${baseURL}/admin/artist/block?id=${idArtist}`).then(router.reload());
       
     } catch (error) {
       console.error('Error blocking the artist:', error);
@@ -36,7 +72,7 @@ export default function index() {
 
   const handleUnblock = async (idArtist) => {
     try {
-      await axios.put(`${baseURL}/admin/unblock?id=${idArtist}`).then(router.reload());
+      await axios.put(`${baseURL}/admin/artist/unblock?id=${idArtist}`).then(router.reload());
       
     } catch (error) {
       console.error('Error unblocking the artist:', error);
@@ -244,7 +280,9 @@ export default function index() {
 
                           <td className="whitespace-nowrap px-4 py-4 text-sm">
                             <div className="flex items-center gap-x-6">
-                              <button className="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
+                              <button
+                                onClick={()=> handleDeleteArtist(item.id_artist)}
+                                className="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
                                 <Delete className="h-6 w-6" />
                               </button>
 
