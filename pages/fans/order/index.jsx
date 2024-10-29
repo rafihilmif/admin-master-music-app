@@ -5,7 +5,7 @@ import { baseURLFile } from '@/baseURLFile';
 import { Delete, VisibilityRounded, Lock, History, Done } from '@mui/icons-material';
 
 export default function index() {
-    const [dataOrder, setDataOrder] = useState([]);
+  const [dataOrder, setDataOrder] = useState([]);
   const [totalOrder,setTotalOrder] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   
