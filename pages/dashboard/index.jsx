@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { PeopleAlt, LocalOffer, MusicNote } from '@mui/icons-material';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
+import { getSession } from 'next-auth/react';
 
 export default function index() {
   const [orders, setOrders] = useState([]);
@@ -330,4 +331,21 @@ export default function index() {
     
     </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

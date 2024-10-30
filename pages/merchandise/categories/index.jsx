@@ -5,6 +5,7 @@ import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
 
 export default function index() {
   const router = useRouter();
@@ -262,4 +263,21 @@ const handleUploadCategories = async () => {
     </div>
       </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import Swal from 'sweetalert2';
+import { getSession } from 'next-auth/react';
 export default function add() {
   const [dataCategories, setDataCategories] = useState([]);
   const [dataArtist, setDataArtist] = useState([]);
@@ -327,4 +328,21 @@ export default function add() {
       </div>
     </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

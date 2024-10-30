@@ -1,7 +1,14 @@
 import { useState, useEffect, Fragment } from "react";
 import { NotificationAdd, MenuOpen, ExpandMore, CardGiftcard, Settings, Edit, Logout } from '@mui/icons-material';
 import { Menu, Transition, Popover } from "@headlessui/react";
-export default function Navbar({showNav, setShowNav}) {
+import { baseURL } from '@/baseURL';
+import { signOut, useSession } from 'next-auth/react';
+export default function Navbar({ showNav, setShowNav }) {
+   const handleSignOut = () => {
+    signOut({ callbackUrl: `${baseURL}/` });
+    localStorage.clear();
+  };
+
     return (
         <>
           <div
@@ -59,11 +66,16 @@ export default function Navbar({showNav, setShowNav}) {
               <div className="p-1">
                 <Menu.Item>
                   <a
-                    href="#"
+                   
                     className="flex hover:bg-orange-500 hover:text-white text-gray-700 rounded p-2 text-sm group transition-colors items-center"
-                  >
-                    <Logout className="h-4 w-4 mr-2" />
+                      >
+                        <button
+                        onClick={handleSignOut}
+                        >
+                          <Logout className="h-4 w-4 mr-2" />
                     Logout
+                      </button>
+                    
                   </a>
                 </Menu.Item>
               </div>

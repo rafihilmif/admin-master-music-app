@@ -5,6 +5,7 @@ import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
+import { getSession } from 'next-auth/react';
 export default function add() {
   const router = useRouter();
 
@@ -182,4 +183,21 @@ export default function add() {
       </div>
     </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

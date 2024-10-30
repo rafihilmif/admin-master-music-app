@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
+import { getSession } from 'next-auth/react';
 
 export default function reportedById() {
   const router = useRouter();
@@ -77,4 +78,21 @@ export default function reportedById() {
       </>
       </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

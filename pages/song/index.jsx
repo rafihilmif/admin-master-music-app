@@ -4,6 +4,7 @@ import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { Delete, Edit } from '@mui/icons-material';
 import Swal from 'sweetalert2';
+import { getSession } from 'next-auth/react';
 
 export default function SongsTable() {
   const [data, setData] = useState([]);
@@ -267,4 +268,21 @@ export default function SongsTable() {
       </div>
     </div>
   );
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

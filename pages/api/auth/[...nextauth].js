@@ -17,8 +17,12 @@ export default NextAuth({
             email: credentials.email,
             password: credentials.password,
           });
-          if (response.status(200)) {
-            return { user: { email: credentials.email } };
+          if (response.status === 200) {
+           return {
+              id: "admin",
+              email: credentials.email,
+              role: "admin"
+            };
           } else {
             return null;
           }
@@ -32,12 +36,14 @@ export default NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.email = user.email;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user.email = token.email;
+      if (token) {
+        session.user.role = token.role;
+      }
       return session;
     },
   },

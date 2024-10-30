@@ -4,6 +4,7 @@ import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { useRouter } from 'next/router';
 import {Clear} from '@mui/icons-material';
+import { getSession } from 'next-auth/react';
 export default function merchandiseById() {
   const router = useRouter();
   const { id } = router.query;
@@ -292,4 +293,21 @@ export default function merchandiseById() {
       </form>
     </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

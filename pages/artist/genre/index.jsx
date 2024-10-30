@@ -5,6 +5,7 @@ import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { getSession } from 'next-auth/react';
 export default function index() {
   const router = useRouter();
   const [dataGenre, setDataGenre] = useState([]);
@@ -260,4 +261,21 @@ export default function index() {
     </div>
       </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

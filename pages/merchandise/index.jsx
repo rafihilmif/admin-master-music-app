@@ -5,6 +5,7 @@ import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import {Delete, Edit, VisibilityRounded, VisibilityOff} from '@mui/icons-material';
 import Swal from 'sweetalert2';
+import { getSession } from 'next-auth/react';
 export default function index() {
   const router = useRouter();
 
@@ -409,4 +410,21 @@ export default function index() {
       </div>
       </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }
