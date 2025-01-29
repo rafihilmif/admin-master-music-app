@@ -3,9 +3,10 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { Delete, VisibilityRounded, Lock, History, Done } from '@mui/icons-material';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 
 export default function index() {
+  const { data: session } = useSession();
   const [dataOrder, setDataOrder] = useState([]);
   const [totalOrder,setTotalOrder] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,6 +16,12 @@ export default function index() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/order?page=${currentPage}`,
+           {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            }
+          }
         );
         setDataOrder(response.data.data);
         setTotalOrder(response.data.total);
@@ -22,8 +29,11 @@ export default function index() {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+        fetchData();
+    }
+  
+  }, [currentPage, session]);
 
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
@@ -135,10 +145,16 @@ export default function index() {
                           </td>
                           <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-500 dark:text-gray-300">
                             <div class="flex items-center gap-x-2">
-                              <img
+                              {item.Fan.avatar === null ? (
+                                          
+                                          <img
+                                className="h-8 w-8 rounded-full object-cover"
+                              src='/image/thumbnail3.png' 
+                              />
+                                      ): (<img
                                 class="h-8 w-8 rounded-full object-cover"
                                 src={`${baseURLFile}/assets/image/avatar/${item.Fan.avatar}`}
-                              />
+                              />)}
                               <div>
                                 <h2 class="text-sm font-medium text-gray-800 dark:text-white ">
                                   {item.Fan.username}

@@ -3,9 +3,10 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 
 export default function orderById() {
+  const { data: session } = useSession();
   const router = useRouter();
   const { id } = router.query;
 
@@ -25,6 +26,12 @@ export default function orderById() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/detail/order?id=${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            }
+          }
         );
         setOrderDate(response.data.created_at);
         setOrderStatus(response.data.status);
@@ -41,12 +48,19 @@ export default function orderById() {
     if (id) {
       fetchDataDetailOrder();
     }
-  }, [id]);
+  }, [id, session]);
 
   useEffect(() => {
     const fetchDataItemOrder = async () => {
       try {
-        const response = await axios.get(`${baseURL}/admin/item/order?id=${id}`);
+        const response = await axios.get(`${baseURL}/admin/item/order?id=${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
         setDataItemOrder(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -55,7 +69,7 @@ export default function orderById() {
     if (id) {
       fetchDataItemOrder();
     }
-  }, [id]);
+  }, [id, session]);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {

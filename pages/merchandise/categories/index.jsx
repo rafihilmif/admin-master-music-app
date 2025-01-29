@@ -5,9 +5,11 @@ import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 
 export default function index() {
+  const { data: session } = useSession();
+
   const router = useRouter();
   const [name, setName] = useState();
   const [dataCategories, setDataCategories] = useState([]);
@@ -20,6 +22,12 @@ export default function index() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/categories?page=${currentPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         setDataCategories(response.data.data);
         setTotalCategories(response.data.total);
@@ -27,8 +35,10 @@ export default function index() {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+      fetchData();
+    } 
+  }, [currentPage, session]);
 
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
@@ -41,7 +51,14 @@ const handleUploadCategories = async () => {
     try {
       const response = await axios.post(`${baseURL}/admin/categories/add`, {
         name: name
-      });
+      },
+        {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
+      );
       if (response.status === 201) {
         Swal.fire({
           icon: 'success',
@@ -65,7 +82,43 @@ const handleUploadCategories = async () => {
       }
     }
     };
-    
+    const handleDeleteCategory = async (idCategory) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      });
+      if (result.isConfirmed) {
+        const response = await axios.delete(`${baseURL}/admin/categories/delete?id=${idCategory}`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        await Swal.fire({
+          title: 'Deleted!',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        }).then(router.reload());
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        const { path, message } = error.response.data;
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [path]: message,
+        }));
+      } else {
+        console.error('An unexpected error occurred:', error);
+      }
+    }
+  };
   return (
       <>
       <div
@@ -88,7 +141,7 @@ const handleUploadCategories = async () => {
           <p class="w-32 shrink-0 font-medium text-black">Categories Name</p>
           <input
            onChange={(e)=> setName(e.target.value)}
-            placeholder="Type genre name"
+            placeholder="Type categories name"
             class="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
           />
         </div>
@@ -99,8 +152,8 @@ const handleUploadCategories = async () => {
           <div class="relative my-1 w-full border bg-white shadow-xl sm:rounded-xl  sm:py-1">
       <div class="flex flex-col py-4 sm:flex-row sm:items-start">
         <section class="container relative mx-3s">
-          <div class="mr-auto shrink-0 sm:py-3 px-5">
-            <p class="text-3xl text-black">Data All Genre</p>
+          <div className="mr-auto shrink-0 sm:py-3 px-16">
+            <p className="text-3xl text-black">Data All Categories</p>
           </div>
           <div class="flex flex-col">
             <div class="overflow-x-auto mx-8">
@@ -187,7 +240,9 @@ const handleUploadCategories = async () => {
                           </td>
                           <td class="whitespace-nowrap px-4 py-4 text-sm">
                             <div class="flex items-center gap-x-6">
-                              <button class="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
+                              <button
+                                onClick={()=> handleDeleteCategory(item.id_category)}
+                                class="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
                                 <Delete className="h-6 w-6" />
                               </button>
 

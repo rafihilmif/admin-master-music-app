@@ -3,8 +3,11 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { useRouter } from 'next/router';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+import Swal from 'sweetalert2';
 export default function updateArtistById() {
+  const { data: session } = useSession();
+
   const router = useRouter();
   const { id } = router.query;
   
@@ -24,7 +27,12 @@ export default function updateArtistById() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get(`${baseURL}/admin/artist?id=${id}`);
+        const response = await axios.get(`${baseURL}/admin/artist?id=${id}`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
         setOldName(response.data.name);
         setOldEmail(response.data.email);
         setOldUsername(response.data.username);
@@ -36,7 +44,7 @@ export default function updateArtistById() {
       }
     }
     fetchData();
-  }, [id]);
+  }, [id, session]);
 
   const handleAvatarChange = (event) => {
     setNewAvatar(event.target.files[0]);
@@ -59,11 +67,32 @@ export default function updateArtistById() {
     }
 
     try {
-      await axios.put(`${baseURL}/admin/artist?id=${id}`, data).
-        then(alert('Successfully updated profile artist', router.reload()));
+      const response = await axios.put(`${baseURL}/admin/artist?id=${id}`, data, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+        if (response.status === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: response.data.message,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          window.location.reload();
+        });
+      }
     } catch (error) {
-      console.error('Error updating profile artist:', error);
-      alert('Error updating profile artist: ' + error.message);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while update the artist account',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
     }
   };
 
@@ -72,6 +101,12 @@ export default function updateArtistById() {
       try {
           const response = await axios.get(
             `${baseURL}/admin/choose/genre`,
+            {
+               headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+        }
+            }
           );
           setDataGenre(response.data);
         } catch (error) {
@@ -79,7 +114,7 @@ export default function updateArtistById() {
         }
     };
     fetchDataGenre();
-  }, []);
+  }, [session]);
 
    
   return (

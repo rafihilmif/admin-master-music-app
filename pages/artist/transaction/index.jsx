@@ -3,9 +3,12 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { VisibilityRounded} from '@mui/icons-material';
+import { getSession, useSession } from 'next-auth/react';
 
 export default function index() {
-    const [dataTransaction, setDataTransaction] = useState([]);
+  const { data: session } = useSession();
+
+  const [dataTransaction, setDataTransaction] = useState([]);
   const [totalTransaction, setTotalTransaction] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -14,6 +17,12 @@ export default function index() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/transaction?page=${currentPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            }
+          }
         );
         setDataTransaction(response.data.data);
         setTotalTransaction(response.data.total);
@@ -21,8 +30,10 @@ export default function index() {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+      fetchData();
+    }
+  }, [currentPage, session]);
 
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
@@ -275,4 +286,21 @@ export default function index() {
     </div>
       </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

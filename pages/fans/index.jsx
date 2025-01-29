@@ -5,8 +5,10 @@ import { baseURLFile } from '@/baseURLFile';
 import { Delete, Edit, Lock, LockOpen} from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+
 export default function index() {
+  const { data: session } = useSession();
    const router = useRouter();
   const [dataFans, setDataFans] = useState([]);
   const [totalFans, setTotalFans] = useState(0);
@@ -17,6 +19,12 @@ export default function index() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/fans?page=${currentPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         setDataFans(response.data.data);
         setTotalFans(response.data.total);
@@ -24,8 +32,10 @@ export default function index() {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+       fetchData();
+    }
+  }, [currentPage, session]);
 
   const handleDeleteFans = async (idFans) => {
     try {
@@ -41,6 +51,12 @@ export default function index() {
       if (result.isConfirmed) {
         const response = await axios.delete(
           `${baseURL}/admin/fans/delete?id=${idFans}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         await Swal.fire({
           title: 'Deleted!',
@@ -64,19 +80,59 @@ export default function index() {
 
    const handleBlock= async (idFans) => {
     try {
-      await axios.put(`${baseURL}/admin/fans/block?id=${idFans}`).then(router.reload());
-      
+      const response = await axios.put(`${baseURL}/admin/fans/block?id=${idFans}`, {}, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+       if (response.status === 200) {
+         await Swal.fire({
+           title: 'Blocked',
+           text: response.data.message,
+           icon: 'success',
+           confirmButtonColor: '#3085d6',
+         });
+      } 
+      window.location.reload();
     } catch (error) {
-      console.error('Error blocking the fans:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while block the fans account',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
     }
   };
 
   const handleUnblock = async (idFans) => {
     try {
-      await axios.put(`${baseURL}/admin/fans/unblock?id=${idFans}`).then(router.reload());
-      
+      const response = await axios.put(`${baseURL}/admin/fans/unblock?id=${idFans}`, {}, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+        if (response.status === 200) {
+         await Swal.fire({
+           title: 'Unblocked',
+           text: response.data.message,
+           icon: 'success',
+           confirmButtonColor: '#3085d6',
+         });
+      } 
+      window.location.reload();
     } catch (error) {
-      console.error('Error unblocking the fans:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while block the fans account',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
     }
   };
 
@@ -170,7 +226,7 @@ export default function index() {
                           scope="col"
                           class="px-4 py-3.5 text-left text-sm font-normal text-gray-500 rtl:text-right dark:text-gray-400"
                         >
-                          Password
+                          Verified
                         </th>
 
                         <th

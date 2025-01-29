@@ -3,8 +3,11 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+import Swal from 'sweetalert2';
 export default function songById() {
+  const { data: session } = useSession();
+
   const router = useRouter();
   const { id } = router.query;
   const fileInputRef1 = useRef();
@@ -32,7 +35,12 @@ export default function songById() {
   useEffect(() => {
      const fetchData = async () => {
       try {
-        const response = await axios.get(`${baseURL}/admin/song?id=${id}`);
+        const response = await axios.get(`${baseURL}/admin/song?id=${id}`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
         setOldArtist(response.data.Artist.name);
         setOldAlbum(response.data.album);
         setOldTrackName(response.data.name);
@@ -49,12 +57,17 @@ export default function songById() {
        fetchData();
     }
    
-  }, [id]);
+  }, [id, session]);
 
   useEffect(() => {
     const fetchDataAlbum = async () => {
       try {
-        const response = await axios.get(`${baseURL}/admin/choose/album?id=${idArtist}`)
+        const response = await axios.get(`${baseURL}/admin/choose/album?id=${idArtist}`,{
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          })
           setDataAlbum(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -63,7 +76,7 @@ export default function songById() {
     if (idArtist) {
       fetchDataAlbum();
     }
-  }, [idArtist]);
+  }, [idArtist, session]);
   
   
    useEffect(() => {
@@ -71,6 +84,12 @@ export default function songById() {
       try {
           const response = await axios.get(
             `${baseURL}/admin/choose/genre`,
+            {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
           );
           setDataGenre(response.data);
         } catch (error) {
@@ -78,7 +97,7 @@ export default function songById() {
         }
     };
     fetchDataGenre();
-  }, []);
+  }, [session]);
 
   const updateField = (field, value) => {
     setFormData({
@@ -93,23 +112,43 @@ export default function songById() {
   const handleAudioChange = (event) => {
     setNewAudioSong(event.target.files[0]);
   };
-  const handleUpdate = async () => {
-    const data = new FormData();
-    Object.keys(formData).forEach((key) => {
-      data.append(key, formData[key]);
-    });
-    if (newImageSong) {
-      data.append('image', newImageSong);
-    }
-    if (newAudioSong) {
-      data.append('audio', newAudioSong);
-    }
-    await axios
-      .put(`${baseURL}/admin/song?id=${id}`, data)
-      .then(alert('Sucessfully change song'), router.reload())
-      .catch((err) => console.error('error' + err));
-  };
 
+
+  const handleUpdate = async () => {
+   const data = new FormData();
+      Object.keys(formData).forEach((key) => {
+        data.append(key, formData[key]);
+      });
+      if (newImageSong) {
+        data.append('image', newImageSong);
+      }
+      if (newAudioSong) {
+        data.append('audio', newAudioSong);
+      }
+    
+    try {
+      const response = await axios
+        .put(`${baseURL}/admin/song?id=${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        if (response.status === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: response.data.message,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          window.location.reload();
+        });
+      }
+    } catch (error) {
+      console.error('An unexpected error occurred:', error);
+    }
+  };
   return (
     <>
       <div class="my-4 w-full border bg-white px-4 shadow-xl sm:mx-4 sm:rounded-xl sm:px-4 sm:py-4">

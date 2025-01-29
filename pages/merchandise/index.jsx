@@ -5,8 +5,10 @@ import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import {Delete, Edit, VisibilityRounded, VisibilityOff} from '@mui/icons-material';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 export default function index() {
+  const { data: session } = useSession();
+  
   const router = useRouter();
 
   const [data, setData] = useState([]);
@@ -18,6 +20,12 @@ export default function index() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/merchs?page=${currentPage}`,
+           {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         setData(response.data.data);
         setTotalMerchandise(response.data.total);
@@ -25,8 +33,11 @@ export default function index() {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+    fetchData();  
+    }
+    
+  }, [currentPage, session]);
 
   const handleDeleteMerchandise = async (idMerch) => {
     try {
@@ -42,6 +53,12 @@ export default function index() {
       if (result.isConfirmed) {
         const response = await axios.delete(
           `${baseURL}/admin/merchandise/delete?id=${idMerch}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         await Swal.fire({
           title: 'Deleted!',
@@ -65,18 +82,46 @@ export default function index() {
 
   const handleHidden= async (idMerch) => {
     try {
-      await axios.put(`${baseURL}/admin/merchandise/hidden?id=${idMerch}`).then(router.reload());
+      const response = await axios.put(`${baseURL}/admin/merchandise/hidden?id=${idMerch}`,{},{
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+      if (response.status === 200) {
+         await Swal.fire({
+          title: 'Hidden!',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+      }
+      window.location.reload();
     } catch (error) {
-      console.error('Error blocking the artist:', error);
+      console.error('Error hidden the merchandise:', error);
     }
   };
 
   const handleUnhidden= async (idMerch) => {
     try {
-      await axios.put(`${baseURL}/admin/merchandise/unhidden?id=${idMerch}`).then(router.reload());
+      const response = await axios.put(`${baseURL}/admin/merchandise/unhidden?id=${idMerch}`,{},{
+         headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+      });
+      if (response.status === 200) {
+        await Swal.fire({
+          title: 'Unhidden!',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+      }
+      window.location.reload();
       
     } catch (error) {
-      console.error('Error unblocking the artist:', error);
+      console.error('Error unhidden the merchandise:', error);
     }
   };
 

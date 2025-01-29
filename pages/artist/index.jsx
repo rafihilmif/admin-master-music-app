@@ -5,8 +5,10 @@ import { baseURLFile } from '@/baseURLFile';
 import { Delete, Edit, Lock, LockOpen } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 export default function index() {
+   const { data: session } = useSession();
+
   const router = useRouter();
   const [data, setData] = useState([]);
   const [totalArtist, setTotalArtist] = useState(0);
@@ -17,6 +19,12 @@ export default function index() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/artists?page=${currentPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         setData(response.data.data);
         setTotalArtist(response.data.total);
@@ -24,8 +32,10 @@ export default function index() {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+      fetchData();
+    }
+  }, [currentPage, session]);
 
   const handleDeleteArtist = async (idArtist) => {
     try {
@@ -41,15 +51,20 @@ export default function index() {
       if (result.isConfirmed) {
         const response = await axios.delete(
           `${baseURL}/admin/artist/delete?id=${idArtist}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         await Swal.fire({
           title: 'Deleted!',
           text: response.data.message,
           icon: 'success',
           confirmButtonColor: '#3085d6',
-        });
+        }).then(router.reload());
       }
-      window.location.reload();
     } catch (error) {
       await Swal.fire({
         icon: 'error',
@@ -64,19 +79,60 @@ export default function index() {
 
    const handleBlock= async (idArtist) => {
     try {
-      await axios.put(`${baseURL}/admin/artist/block?id=${idArtist}`).then(router.reload());
-      
+      const response = await axios.put(`${baseURL}/admin/artist/block?id=${idArtist}`,{}, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.status === 200) {
+        console.log(response.data.message);
+         await Swal.fire({
+           title: 'Blocked',
+           text: response.data.message,
+           icon: 'success',
+           confirmButtonColor: '#3085d6',
+         });
+      } 
+      window.location.reload();
     } catch (error) {
-      console.error('Error blocking the artist:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while block the artist account',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
     }
   };
 
   const handleUnblock = async (idArtist) => {
     try {
-      await axios.put(`${baseURL}/admin/artist/unblock?id=${idArtist}`).then(router.reload());
-      
+      const response = await axios.put(`${baseURL}/admin/artist/unblock?id=${idArtist}`,{}, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.status === 200) {
+        await Swal.fire({
+          title: 'Unblocked',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+      }   
+      window.location.reload();
     } catch (error) {
-      console.error('Error unblocking the artist:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while unblock the artist account',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
     }
   };
 
@@ -170,9 +226,8 @@ export default function index() {
                           scope="col"
                           className="px-4 py-3.5 text-left text-sm font-normal text-gray-500 rtl:text-right dark:text-gray-400"
                         >
-                          Password
+                          Reported
                         </th>
-
                         <th
                           scope="col"
                           className="px-4 py-3.5 text-left text-sm font-normal text-gray-500 rtl:text-right dark:text-gray-400"

@@ -3,8 +3,10 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
+import { getSession, useSession } from 'next-auth/react';
 
 export default function transactionById() {
+  const { data: session } = useSession();
   const router = useRouter();
   const { id } = router.query;
 
@@ -21,7 +23,13 @@ export default function transactionById() {
     const fetchDataDetailTransaction = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}/artist/detail/transaction?id=${id}`,
+          `${baseURL}/admin/detail/transaction?id=${id}`,
+           {
+             headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+        }
+          }
         );
         setTransactionDate(response.data.created_at);
         setTransactionStatus(response.data.status);
@@ -36,13 +44,19 @@ export default function transactionById() {
     if (id) {
       fetchDataDetailTransaction();
     }
-  }, [id]);
+  }, [id, session]);
 
   useEffect(() => {
     const fetchDataItemTransaction = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}/artist/item/transaction?id=${id}`,
+          `${baseURL}/admin/item/transaction?id=${id}`,
+           {
+             headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+        }
+          }
         );
         setDataItemTransaction(response.data);
       } catch (error) {
@@ -52,7 +66,7 @@ export default function transactionById() {
     if (id) {
       fetchDataItemTransaction();
     }
-  }, [id]);
+  }, [id, session]);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
@@ -162,4 +176,21 @@ export default function transactionById() {
       </div>
       </>
   )
+}
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      ...session,
+    },
+  };
 }

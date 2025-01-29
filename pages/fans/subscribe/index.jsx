@@ -3,9 +3,10 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { VisibilityRounded, History, Done, Edit } from '@mui/icons-material';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 
 export default function index() {
+  const { data: session } = useSession();
   const [dataSubscribe, setDataSubscribe] = useState([]);
   const [totalSubscribe,setTotalSubscribe] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,6 +16,12 @@ export default function index() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/plan?page=${currentPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            }
+          }
         );
         setDataSubscribe(response.data.data);
         setTotalSubscribe(response.data.total);
@@ -22,9 +29,10 @@ export default function index() {
         console.error('Error fetching data:', error);
       }
     };
-    
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+      fetchData();
+    }
+  }, [currentPage, session]);
 
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
@@ -131,15 +139,16 @@ export default function index() {
                         <tr>
                           <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-700 dark:text-gray-200">
                             <div class="inline-flex items-center gap-x-3">
-                              <span>{item.id_order}</span>
+                              <span>{item.id_plan}</span>
                             </div>
                           </td>
                           <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-500 dark:text-gray-300">
                             <div class="flex items-center gap-x-2">
                              {item.Fan.avatar === null ? (
-                            <img
+                                          
+                                          <img
                                 className="h-8 w-8 rounded-full object-cover"
-                              src='/images/commonthumbnails/thumbnail1.png' 
+                              src='/image/thumbnail3.png' 
                               />
                                       ): (<img
                                 class="h-8 w-8 rounded-full object-cover"
@@ -183,17 +192,11 @@ export default function index() {
                           </td>
                           <td class="whitespace-nowrap px-4 py-4 text-sm">
                             <div class="flex items-center gap-x-6">
-                         
-
                               <a
-                                href={`/admin/artist/update/${item.id_artist}`}
-                                className=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none"
-                              >
-                                <VisibilityRounded className="h-6 w-6" />
-                              </a>
-                              <button class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
+                                 href={`/fans/subscribe/${item.id_plan}`}
+                                class=" text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none">
                                 <Edit className="h-6 w-6" />
-                              </button>
+                              </a>
                             </div>
                           </td>
                         </tr>

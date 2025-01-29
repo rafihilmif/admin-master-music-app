@@ -3,11 +3,13 @@ import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { useRouter } from 'next/router';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+import Swal from 'sweetalert2';
 export default function updateArtistById() {
   const router = useRouter();
   const { id } = router.query;
-  
+  const { data: session } = useSession();
+
   const [oldFirstName, setOldFirstName] = useState('');
   const [oldLastName, setOldLastName] = useState('');
   const [oldEmail, setOldEmail] = useState('');
@@ -24,7 +26,12 @@ export default function updateArtistById() {
    useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get(`${baseURL}/admin/fan?id=${id}`);
+        const response = await axios.get(`${baseURL}/admin/fan?id=${id}`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
         setOldFirstName(response.data.first_name);
         setOldLastName(response.data.last_name);
         setOldEmail(response.data.email);
@@ -35,9 +42,12 @@ export default function updateArtistById() {
       } catch (error) {
         console.error('Error fetching data:', error);
       }
-    }
-    fetchData();
-  }, [id]);
+     }
+     if (id) {
+       fetchData();
+     }
+    
+  }, [id, session]);
 
   const handleAvatarChange = (event) => {
     setNewAvatar(event.target.files[0]);
@@ -60,11 +70,32 @@ export default function updateArtistById() {
     }
 
       try {
-        await axios.put(`${baseURL}/admin/fan?id=${id}`, data)
-        .then(alert('Successfully updated profile fans', router.reload()));
+        const response = await axios.put(`${baseURL}/admin/fan?id=${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+        if (response.status === 200) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: response.data.message,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#3085d6',
+          }).then(() => {
+            window.location.reload();
+          });
+        }
     } catch (error) {
-      console.error('Error updating profile fans:', error);
-      alert('Error updating profile fans: ' + error.message);
+        await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while update the fans account',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
     }
   };
 

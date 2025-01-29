@@ -4,9 +4,11 @@ import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { Delete, Edit } from '@mui/icons-material';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 
 export default function SongsTable() {
+  const { data: session } = useSession();
+
   const [data, setData] = useState([]);
   const [totalSong, setTotalSong] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,21 +18,23 @@ export default function SongsTable() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/songs?page=${currentPage}`,
+           {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         setData(response.data.data);
         setTotalSong(response.data.total);
       } catch (error) {
         console.error('Error fetching data:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to fetch songs data',
-          confirmButtonColor: '#3085d6',
-        });
       }
     };
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+      fetchData();
+    }
+  }, [currentPage, session]);
 
   const handleDeleteSong = async (idSong) => {
     try {
@@ -53,12 +57,7 @@ export default function SongsTable() {
           icon: 'success',
           confirmButtonColor: '#3085d6',
         });
-        // Refresh data instead of reloading page
-        const updatedResponse = await axios.get(
-          `${baseURL}/admin/songs?page=${currentPage}`,
-        );
-        setData(updatedResponse.data.data);
-        setTotalSong(updatedResponse.data.total);
+          window.location.reload();
       }
     } catch (error) {
       await Swal.fire({

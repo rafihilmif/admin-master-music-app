@@ -17,13 +17,16 @@ export default NextAuth({
             email: credentials.email,
             password: credentials.password,
           });
-          if (response.status === 200) {
+          const user = response.data;
+          if (user && user.token) {
            return {
-              id: "admin",
-              email: credentials.email,
-              role: "admin"
+              id: user.id,
+              email: user.email,
+              role: user.role,
+              accessToken: user.token,
             };
           } else {
+            console.error('Access token is missing in user data');
             return null;
           }
         } catch (error) {
@@ -33,17 +36,24 @@ export default NextAuth({
       },
     }),
   ],
+   session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60,
+  },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
+        if (user) {
         token.role = user.role;
+        token.accessToken = user.accessToken;
+        token.id = user.id;
+        token.email = user.email;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.role = token.role;
-      }
+      session.user.role = token.role;
+      session.user.id = token.id;
+      session.accessToken = token.accessToken;
       return session;
     },
   },

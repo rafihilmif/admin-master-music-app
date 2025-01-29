@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 export default function add() {
+  const { data: session } = useSession();
+
   const [dataCategories, setDataCategories] = useState([]);
   const [dataArtist, setDataArtist] = useState([]);
 
@@ -27,6 +29,12 @@ export default function add() {
       try {
           const response = await axios.get(
             `${baseURL}/admin/choose/categories`,
+            {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
           );
           setDataCategories(response.data);
         } catch (error) {
@@ -34,13 +42,19 @@ export default function add() {
         }
     };
     fetchDataCategories();
-   }, []);
+   }, [session]);
     
     useEffect(() => {
     const fetchDataCategories = async () => {
       try {
           const response = await axios.get(
             `${baseURL}/admin/choose/artist`,
+            {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
           );
           setDataArtist(response.data);
         } catch (error) {
@@ -48,7 +62,7 @@ export default function add() {
         }
     };
     fetchDataCategories();
-   }, []);
+   }, [session]);
 
     const uploadImageToClient = (event) => {
     const newFiles = Array.from(event.target.files);
@@ -101,7 +115,13 @@ export default function add() {
     });
 
     try {
-      const response = await axios.post(`${baseURL}/admin/merchandise/add?id=${idArtist}`, formData);
+      const response = await axios.post(`${baseURL}/admin/merchandise/add?id=${idArtist}`, formData,
+        {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          });
       if (response.status === 201) {
         Swal.fire({
           icon: 'success',
@@ -109,9 +129,11 @@ export default function add() {
           text: response.data.message,
           confirmButtonText: 'OK',
           confirmButtonColor: '#3085d6',
-        }).then(() => {
-          window.location.reload();
         });
+        console.log(response.data.data);
+        // }).then(() => {
+        //   window.location.reload();
+        // });
       }
     } catch (error) {
     if (error.response && error.response.status === 400) {
@@ -269,7 +291,8 @@ export default function add() {
                       type="file"
                       onChange={uploadImageToClient}
                       name="image"
-                      id="file"
+                  id="file"
+                  accept="image/*"
                       className="sr-only"
                     />
                     <label
@@ -285,8 +308,9 @@ export default function add() {
                   </div>
                   {image.map((file, index) => (
                     <div
-                      key={index}
-                      className="mb-4 rounded-md bg-[#F5F7FB] px-8 py-4">
+                      key={file.name}
+                      className="mb-4 rounded-md bg-[#F5F7FB] px-8 py-4"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="truncate pr-3 text-base font-medium text-[#07074D]">
                           {file.name}
@@ -318,7 +342,17 @@ export default function add() {
                         </button>
                       </div>
                       <div className="relative mt-5 h-[6px] w-full rounded-lg bg-[#E2E5EF]">
-                        <div className="absolute left-0 right-0 h-full w-[75%] rounded-lg bg-[#6A64F1]"></div>
+                        <div
+                          className="absolute left-0 right-0 h-full rounded-lg bg-[#6A64F1]"
+                          style={{
+                            width: `${uploadProgress[file.name] || 0}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="mt-2 text-sm text-gray-500">
+                        {uploadProgress[file.name]
+                          ? `${uploadProgress[file.name]}%`
+                          : 'Ready to upload'}
                       </div>
                     </div>
                   ))}

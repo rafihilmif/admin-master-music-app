@@ -4,9 +4,9 @@ import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 export default function add() {
-  const { reset } = useForm();
+  const { data: session } = useSession();
   const router = useRouter();
 
   const [dataArtist, setDataArtist] = useState([]);
@@ -32,6 +32,12 @@ export default function add() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/choose/artist`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         setDataArtist(response.data);
       } catch (error) {
@@ -39,23 +45,51 @@ export default function add() {
       }
     };
     fetchDataArtist();
-  }, []);
+  }, [session]);
 
     useEffect(() => {
         const fetchDataAlbum = async () => {
             try {
                 const response = await axios.get(
-                    `${baseURL}/admin/choose/album?id=${idArtist}`,
+                  `${baseURL}/admin/choose/album?id=${idArtist}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${session.accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                  }
                 );
                 setDataAlbum(response.data);
             } catch (error) {
              console.error('Error fetching data:', error);
             }
-        };
+      };
+      if (idArtist) {
         fetchDataAlbum();
-    }, [idArtist]);
+      }
+    }, [idArtist, session]);
     
    useEffect(() => {
+    const fetchDataGenre = async () => {
+      try {
+          const response = await axios.get(
+            `${baseURL}/admin/choose/genre`,
+            {
+              headers: {
+                Authorization: `Bearer ${session.accessToken}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          setDataGenre(response.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+    };
+    fetchDataGenre();
+   }, [session]);
+  
+    useEffect(() => {
     const fetchDataGenre = async () => {
       try {
           const response = await axios.get(
@@ -104,7 +138,12 @@ export default function add() {
     
     try {
       const response = await axios
-        .post(`${baseURL}/admin/song/add`, formData)
+        .post(`${baseURL}/admin/song/add`, formData, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
         if (response.status === 201) {
         Swal.fire({
           icon: 'success',
@@ -169,9 +208,9 @@ export default function add() {
     >
       <option value="">Please select album...</option>
       <option value="-">-</option>
-       {dataAlbum.map((item) => (
-      <option key={item.id_album} value={item.name}>{item.name}</option>
-      ))}
+              {dataAlbum.map((item) => (
+                <option key={item.id_album} value={item.name}>{item.name}</option>
+              ))}
     </select>
   </div>
     </div>
@@ -194,7 +233,7 @@ export default function add() {
               onChange={(e) => setGenre(e.target.value)}
               className="w-full rounded-md border bg-white px-2 py-2 outline-none ring-blue-600 focus:ring-1 text-black"
             >
-              <option value="#">Please select artist...</option>
+              <option value="#">Please select genre...</option>
               {dataGenre.map((item) => (
                 <option value={item.name} key={item.id_genre}>{item.name}</option>
               ))}
@@ -242,6 +281,7 @@ export default function add() {
           <input
             onChange={uploadAudioToClient}
             type="file"
+            accept="audio/*"
             className="w-full rounded-md border bg-white px-2 py-2 text-blue-600 outline-none ring-blue-600 focus:ring-1"
           />
         </div>
@@ -251,7 +291,8 @@ export default function add() {
           </div>
           <input
             onChange={uploadImageToClient}
-            type="file"
+             type="file"
+             accept="image/*"
             className="w-full rounded-md border bg-white px-2 py-2 text-blue-600 outline-none ring-blue-600 focus:ring-1"
           />
         </div>

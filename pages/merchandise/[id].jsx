@@ -4,12 +4,14 @@ import { baseURL } from '@/baseURL';
 import { baseURLFile } from '@/baseURLFile';
 import { useRouter } from 'next/router';
 import {Clear} from '@mui/icons-material';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+import Swal from 'sweetalert2';
 export default function merchandiseById() {
+   const { data: session } = useSession();
   const router = useRouter();
   const { id } = router.query;
     
-    const [dataCategories, setDataCategories] = useState([]);
+  const [dataCategories, setDataCategories] = useState([]);
     
   const [loading, setLoading] = useState(true);
   const [OldName, setOldName] = useState('');
@@ -33,6 +35,12 @@ export default function merchandiseById() {
     try {
       const response = await axios.get(
         `${baseURL}/artist/image/merchandise?id=${id}`,
+         {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
       );
       return response.data;
     } catch (error) {
@@ -46,6 +54,12 @@ export default function merchandiseById() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/detail/merchandise?id=${id}`,
+           {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         setOldName(response.data.name);
         setOldDesc(response.data.description);
@@ -68,13 +82,19 @@ export default function merchandiseById() {
     if (id) {
       fetchData();
     }
-    }, [id]);
+    }, [id, session]);
     
    useEffect(() => {
     const fetchDataCategories = async () => {
       try {
           const response = await axios.get(
             `${baseURL}/admin/choose/categories`,
+             {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
           );
           setDataCategories(response.data);
         } catch (error) {
@@ -82,7 +102,7 @@ export default function merchandiseById() {
         }
     };
     fetchDataCategories();
-   }, []);
+   }, [session]);
     
 
     const uploadImageToClient = (event, index) => {
@@ -115,12 +135,24 @@ export default function merchandiseById() {
     });
 
     try {
-      await axios.put(`${baseURL}/admin/merchandise/update?id=${id}`, data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      alert('Successfully updated merchandise', router.reload());
+      const response = await axios.put(`${baseURL}/admin/merchandise/update?id=${id}`, data, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+             'Content-Type': 'multipart/form-data',
+            },
+          });
+      if (response.status === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: response.data.message,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          window.location.reload();
+        });
+      }
+    
     } catch (error) {
       console.error('Error updating merchandise:', error);
       alert('Error updating merchandise: ' + error.message);

@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+import Swal from 'sweetalert2';
 
 export default function categoriesById() {
-   const router = useRouter();
+  const { data: session } = useSession();
+  
+  const router = useRouter();
   const { id } = router.query;
   const [newName, setNewName] = useState('');
   const [name, setName] = useState('');
@@ -13,22 +16,45 @@ export default function categoriesById() {
    useEffect(() => {
     const fetchDataGenre = async () => {
       try {
-         const response = await axios.get(`${baseURL}/admin/genre?id=${id}`);
+        const response = await axios.get(`${baseURL}/admin/genre?id=${id}`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
          setName(response.data.name);
         } catch (error) {
           console.error('Error fetching data:', error);
         }
-    };
-    fetchDataGenre();
-   }, [id]);
+     };
+     if (id) {
+        fetchDataGenre();
+     }
+   
+   }, [id, session]);
   
-  const onUpdate = async () => {
+  const handleUpdateGenre = async () => {
     try {
-       await axios
-      .put(`${baseURL}/admin/genre?id=${id}`, {
-        name: newName,
-      })
-      .then(alert('Data berhasil diubah'), router.reload())
+      const response = await axios
+        .put(`${baseURL}/admin/genre?id=${id}`, {
+          name: newName,
+        }, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      if (response.status === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: response.data.message,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          window.location.reload();
+        });
+      }
     } catch (error) {
       console.error('error' + error);
   };
@@ -42,7 +68,7 @@ export default function categoriesById() {
             <p class="text-sm text-gray-600">Update existing data</p>
           </div>
           <button
-            onClick={onUpdate}
+            onClick={()=>handleUpdateGenre()}
             class="hidden rounded-lg border-2 border-transparent bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring sm:inline"
           >
             Update

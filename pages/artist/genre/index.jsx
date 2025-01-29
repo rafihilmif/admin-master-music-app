@@ -5,8 +5,11 @@ import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+
 export default function index() {
+  const { data: session } = useSession();
+  
   const router = useRouter();
   const [dataGenre, setDataGenre] = useState([]);
   const [name, setName] = useState();
@@ -19,6 +22,12 @@ export default function index() {
       try {
         const response = await axios.get(
           `${baseURL}/admin/genres?page=${currentPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            }
+          }
         );
         setDataGenre(response.data.data);
         setTotalGenre(response.data.total);
@@ -26,8 +35,10 @@ export default function index() {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, [currentPage]);
+    if (currentPage) {
+         fetchData();
+    }
+  }, [currentPage, session]);
 
   const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
@@ -37,11 +48,17 @@ export default function index() {
     setCurrentPage(currentPage - 1);
   };
 
-  const handleUploadGenre = async () => {
+  const handleAddGenre = async () => {
     try {
       const response = await axios.post(`${baseURL}/admin/genre/add`, {
         name: name
-      });
+      },
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          }
+        });
       if (response.status === 201) {
         Swal.fire({
           icon: 'success',
@@ -49,9 +66,45 @@ export default function index() {
           text: response.data.message,
           confirmButtonText: 'OK',
           confirmButtonColor: '#3085d6',
-        }).then(() => {
-          window.location.reload();
         });
+      }
+       window.location.reload();
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        const { path, message } = error.response.data;
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [path]: message,
+        }));
+      } else {
+        console.error('An unexpected error occurred:', error);
+      }
+    }
+  };
+  const handleDeleteGenre = async (idGenre) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      });
+      if (result.isConfirmed) {
+        const response = await axios.delete(`${baseURL}/admin/genre/delete?id=${idGenre}`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        await Swal.fire({
+          title: 'Deleted!',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        }).then(router.reload());
       }
     } catch (error) {
       if (error.response && error.response.status === 400) {
@@ -64,7 +117,8 @@ export default function index() {
         console.error('An unexpected error occurred:', error);
       }
     }
-    };
+  };
+
   return (
       <>
       <div
@@ -77,7 +131,7 @@ export default function index() {
           </div>
           <button
             type="submit"
-            onClick={()=> handleUploadGenre()}
+            onClick={()=> handleAddGenre()}
             className="hidden rounded-lg border-2 border-transparent bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 focus:outline-none focus:ring sm:inline"
           >
             Add
@@ -186,7 +240,9 @@ export default function index() {
                           </td>
                           <td className="whitespace-nowrap px-4 py-4 text-sm">
                             <div className="flex items-center gap-x-6">
-                              <button className="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
+                              <button
+                                onClick={()=> handleDeleteGenre(item.id_genre)}
+                                className="text-gray-500 transition-colors duration-200 hover:text-indigo-500 focus:outline-none dark:text-gray-300 dark:hover:text-indigo-500">
                                 <Delete className="h-6 w-6" />
                               </button>
 

@@ -2,34 +2,70 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { baseURL } from '@/baseURL';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+import Swal from 'sweetalert2';
 
 export default function categoriesById() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [newName, setNewName] = useState('');
   const [name, setName] = useState('');
   const { id } = router.query;
 
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchDataCategories = async () => {
       try {
-        const response = await axios.get(`${baseURL}/admin/category?id=${id}`);
-         setName(response.data.name);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
+        const response = await axios.get(`${baseURL}/admin/category?id=${id}`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        setName(response.data.name);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
-    fetchDataCategories();
-    }, [id]);
+    if (id) {
+      fetchDataCategories();
+    }
+  }, [id, session]);
     
   const onUpdate = async () => {
-    await axios
-      .put(`${baseURL}/admin/category?id=${id}`, {
+    try {
+      const response = await axios.put(`${baseURL}/admin/category?id=${id}`, {
         name: newName,
-      })
-      .then(alert('Data berhasil diubah'), router.reload())
-      .catch((err) => console.error('error' + err));
+      },
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+         if (response.status === 200) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: response.data.message,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#3085d6',
+          }).then(() => {
+            window.location.reload();
+          });
+        }
+    } catch (error) {
+       await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while update the fans account',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3085d6',
+      });
+      window.location.reload();
+    }
+    
+      
   };
   return (
       <>

@@ -4,9 +4,10 @@ import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 export default function add() {
-
+  const { data: session } = useSession();
+  
   const router = useRouter();
   const [dataGenre, setDataGenre] = useState([]);
 
@@ -32,6 +33,12 @@ export default function add() {
       try {
           const response = await axios.get(
             `${baseURL}/admin/choose/genre`,
+            {
+            headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+            }
           );
           setDataGenre(response.data);
         } catch (error) {
@@ -39,7 +46,7 @@ export default function add() {
         }
     };
     fetchDataGenre();
-  }, []);
+  }, [session]);
 
   const handleRegisterArtist = async () => {
     const formData = new FormData();
@@ -53,7 +60,12 @@ export default function add() {
     
     console.log(formData.get('avatar'));
     try {
-      const response = await axios.post(`${baseURL}/admin/artist/add`, formData);
+      const response = await axios.post(`${baseURL}/admin/artist/add`, formData, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+         'Content-Type': 'multipart/form-data',
+        }
+      });
         if (response.status === 201) {
         Swal.fire({
           icon: 'success',
@@ -61,10 +73,9 @@ export default function add() {
           text: response.data.message,
           confirmButtonText: 'OK',
           confirmButtonColor: '#3085d6',
-        }).then(() => {
-          window.location.reload();
-        });
+        })
       }
+      window.location.reload();
     } catch (error) {
       if (error.response && error.response.status === 400) {
         const { path, message } = error.response.data;
@@ -181,7 +192,9 @@ export default function add() {
             </p>
              <input
                 onChange={uploadToClient}
-                type="file"
+              type="file"
+          
+                    accept="image/*"
                 className="max-w-full rounded-lg px-2 font-medium text-blue-600 outline-none ring-blue-600 focus:ring-1"
               />
           </div>

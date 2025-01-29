@@ -5,8 +5,10 @@ import { baseURL } from '@/baseURL';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 export default function add() {
+  const { data: session } = useSession();
+
   const router = useRouter();
 
   const [username, setUsername] = useState('');
@@ -39,7 +41,12 @@ export default function add() {
     
     console.log(formData);
     try {
-      const response = await axios.post(`${baseURL}/admin/fans/add`, formData);
+      const response = await axios.post(`${baseURL}/admin/fans/add`, formData, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+         'Content-Type': 'multipart/form-data',
+        }
+      });
         if (response.status === 201) {
         Swal.fire({
           icon: 'success',
@@ -175,6 +182,7 @@ export default function add() {
               <input
                 onChange={uploadToClient}
                 type="file"
+                accept="image/*"
                 className="max-w-full rounded-lg px-2 font-medium text-blue-600 outline-none ring-blue-600 focus:ring-1"
               />
             </div>
